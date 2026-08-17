@@ -39,56 +39,62 @@
       width: 100%;
       height: 100%;
     }
-    /* 25% Command & Telemetry Sidebar */
+    /* 25% Command & Telemetry Sidebar - compact */
     #sidePanel {
       width: 25%;
       height: 100vh;
       background: rgba(10, 15, 30, 0.95);
       border-left: 2px solid #00fff5;
       box-shadow: -5px 0 25px rgba(0, 255, 245, 0.2);
-      padding: 24px 18px;
+      padding: 16px 14px;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 10px;
       z-index: 5;
       backdrop-filter: blur(10px);
+      overflow: hidden; /* no scrolling */
     }
     .panel-header {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 900;
       letter-spacing: 2px;
       color: #00fff5;
       text-transform: uppercase;
       border-bottom: 1px solid rgba(0, 255, 245, 0.3);
-      padding-bottom: 8px;
+      padding-bottom: 6px;
       text-shadow: 0 0 10px rgba(0, 255, 245, 0.5);
+      flex-shrink: 0;
     }
     .stat-box {
       background: rgba(15, 23, 42, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      padding: 12px;
+      border-radius: 6px;
+      padding: 8px 10px;
+      flex-shrink: 0;
     }
     .stat-label {
-      font-size: 12px;
+      font-size: 10px;
       color: #94a3b8;
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     .stat-value {
-      font-size: 20px;
+      font-size: 17px;
       font-weight: 800;
       color: #ffffff;
     }
+    .stat-value.small {
+      font-size: 14px;
+    }
     .bar-container {
       width: 100%;
-      height: 14px;
+      height: 10px;
       background: rgba(15, 23, 42, 0.9);
       border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 7px;
+      border-radius: 5px;
       overflow: hidden;
-      margin-top: 6px;
+      margin-top: 4px;
     }
     .overlay {
       position: absolute;
@@ -123,6 +129,9 @@
     .stats-card strong {
       color: #00fff5;
       float: right;
+    }
+    .stats-card .best-row {
+      color: #ffd700;
     }
     button {
       padding: 14px 28px;
@@ -279,6 +288,67 @@
       transform: translate(-2px, -2px);
       box-shadow: 6px 6px 0 #000;
     }
+    #bestStats {
+      margin-top: 16px;
+      padding: 12px;
+      background: #181818;
+      border: 1px solid #333;
+      border-radius: 4px;
+      text-align: left;
+      font-size: 13px;
+      color: #aaa;
+    }
+    #bestStats .best-title {
+      font-weight: 700;
+      color: #ffd700;
+      margin-bottom: 4px;
+    }
+    #bestStats span {
+      color: #fff;
+    }
+    .best-record-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 1px 0;
+    }
+    .best-record-row .label {
+      color: #94a3b8;
+      font-size: 11px;
+    }
+    .best-record-row .value {
+      color: #ffd700;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    /* records box compact */
+    .stat-box.records {
+      border-color: #ffd700;
+      padding: 6px 10px;
+      margin-top: auto; /* push to bottom */
+    }
+    .stat-box.records .stat-label {
+      color: #ffd700;
+      font-size: 10px;
+    }
+    /* For very small screens, we still allow scroll if needed, but we hide overflow on sidePanel */
+    @media (max-height: 700px) {
+      #sidePanel {
+        padding: 10px 12px;
+        gap: 6px;
+      }
+      .stat-box {
+        padding: 5px 8px;
+      }
+      .stat-value {
+        font-size: 14px;
+      }
+      .stat-label {
+        font-size: 9px;
+      }
+      .bar-container {
+        height: 8px;
+      }
+    }
     @media (max-width: 600px) {
       .start-panel { padding: 20px; }
       .start-panel h1 { font-size: 34px; }
@@ -303,13 +373,13 @@
     <div id="joystickZone"><div id="joystickKnob"></div></div>
   </div>
 
-  <!-- 25% UI Telemetry Sidebar -->
+  <!-- 25% UI Telemetry Sidebar - compact -->
   <div id="sidePanel">
     <div class="panel-header">COMBAT TELEMETRY</div>
 
     <div class="stat-box">
       <div class="stat-label">SHIP EVOLUTION</div>
-      <div class="stat-value" id="shipTierLabel" style="font-size: 14px; color:#38bdf8;">TIER 1 // VIPER</div>
+      <div class="stat-value" id="shipTierLabel" style="font-size: 13px; color:#38bdf8;">TIER 1 // VIPER</div>
     </div>
 
     <div class="stat-box">
@@ -321,30 +391,49 @@
 
     <div class="stat-box">
       <div class="stat-label">SYSTEM LEVEL & XP</div>
-      <div class="stat-value">LVL <span id="hudLevel" style="color:#00fff5;">1</span></div>
-      <div class="bar-container" style="height: 8px;">
+      <div class="stat-value" style="font-size:15px;">LVL <span id="hudLevel" style="color:#00fff5;">1</span></div>
+      <div class="bar-container" style="height: 6px;">
         <div id="xpBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #00fff5); box-shadow: 0 0 10px #00fff5;"></div>
       </div>
     </div>
 
-    <div class="stat-box">
-      <div class="stat-label">CREDITS & RESOURCES</div>
-      <div style="font-size: 18px; font-weight: 800; color: #ffd700; margin-bottom: 4px;">
-        🪙 <span id="hudCoins">0</span> COINS
+    <div class="stat-box" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px;">
+      <div>
+        <div class="stat-label">CREDITS</div>
+        <div style="font-size: 16px; font-weight: 800; color: #ffd700;">🪙 <span id="hudCoins">0</span></div>
       </div>
-      <div style="font-size: 16px; font-weight: 700; color: #00fff5;">
-        💎 <span id="hudGems">0</span> GEMS
+      <div style="text-align:right;">
+        <div class="stat-label">GEMS</div>
+        <div style="font-size: 16px; font-weight: 700; color: #00fff5;">💎 <span id="hudGems">0</span></div>
       </div>
     </div>
 
-    <div class="stat-box">
-      <div class="stat-label">SCORE</div>
-      <div class="stat-value" id="hudScore">0</div>
+    <div class="stat-box" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px;">
+      <div>
+        <div class="stat-label">SCORE</div>
+        <div class="stat-value" id="hudScore" style="font-size:16px;">0</div>
+      </div>
+      <div>
+        <div class="stat-label">FLIGHT</div>
+        <div class="stat-value" id="hudTime" style="font-size:16px;">0s</div>
+      </div>
     </div>
 
-    <div class="stat-box">
-      <div class="stat-label">FLIGHT TIME</div>
-      <div class="stat-value" id="hudTime">0s</div>
+    <!-- All-Time Best Records - pushed to bottom -->
+    <div class="stat-box records" style="margin-top: auto;">
+      <div class="stat-label">🏆 ALL-TIME BEST</div>
+      <div class="best-record-row">
+        <span class="label">Score</span>
+        <span class="value" id="sideBestScore">0</span>
+      </div>
+      <div class="best-record-row">
+        <span class="label">Flight</span>
+        <span class="value" id="sideBestTime">0s</span>
+      </div>
+      <div class="best-record-row">
+        <span class="label">Coins</span>
+        <span class="value" id="sideBestCoins">0</span>
+      </div>
     </div>
   </div>
 
@@ -380,6 +469,14 @@
         </p>
       </div>
 
+      <!-- Best stats display on start screen -->
+      <div id="bestStats">
+        <div class="best-title">🏆 RECORDS</div>
+        <div>Best Score: <span id="bestScoreStart">0</span></div>
+        <div>Best Flight: <span id="bestTimeStart">0s</span></div>
+        <div>Most Coins: <span id="bestCoinsStart">0</span></div>
+      </div>
+
       <button id="startGameButton" class="start-game-button" type="button">
         PLAY GAME
       </button>
@@ -403,6 +500,10 @@
       <p>Coins Bounties: <strong id="runCoins" style="color:#ffd700;">0</strong></p>
       <hr style="border-color:rgba(255,255,255,0.1); margin:12px 0;">
       <p>Gems Collected: <strong id="runGems">0</strong></p>
+      <hr style="border-color:rgba(255,255,255,0.1); margin:12px 0;">
+      <p class="best-row">🏆 Best Score: <strong id="bestScoreOver">0</strong></p>
+      <p class="best-row">⏱️ Best Flight Time: <strong id="bestTimeOver">0s</strong></p>
+      <p class="best-row">🪙 Most Coins: <strong id="bestCoinsOver">0</strong></p>
     </div>
     <button onclick="restartGame()">RELAUNCH FIGHTER 🚀</button>
   </div>
@@ -419,6 +520,70 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
+
+// ----- High Score Storage Helpers -----
+function getHighScore() {
+  return parseInt(localStorage.getItem('hyperion-high-score')) || 0;
+}
+function setHighScore(val) {
+  localStorage.setItem('hyperion-high-score', val);
+}
+function getHighTime() {
+  return parseInt(localStorage.getItem('hyperion-high-time')) || 0;
+}
+function setHighTime(val) {
+  localStorage.setItem('hyperion-high-time', val);
+}
+function getHighCoins() {
+  return parseInt(localStorage.getItem('hyperion-high-coins')) || 0;
+}
+function setHighCoins(val) {
+  localStorage.setItem('hyperion-high-coins', val);
+}
+
+function updateBestStatsDisplay() {
+  const highScore = getHighScore();
+  const highTime = getHighTime();
+  const highCoins = getHighCoins();
+
+  // Start screen
+  document.getElementById('bestScoreStart').textContent = highScore;
+  document.getElementById('bestTimeStart').textContent = highTime + 's';
+  document.getElementById('bestCoinsStart').textContent = highCoins;
+
+  // Game over screen
+  document.getElementById('bestScoreOver').textContent = highScore;
+  document.getElementById('bestTimeOver').textContent = highTime + 's';
+  document.getElementById('bestCoinsOver').textContent = highCoins;
+
+  // Side panel
+  document.getElementById('sideBestScore').textContent = highScore;
+  document.getElementById('sideBestTime').textContent = highTime + 's';
+  document.getElementById('sideBestCoins').textContent = highCoins;
+}
+
+// Update high scores after a run ends
+function updateHighScores(currentScore, currentTime, currentCoins) {
+  let updated = false;
+  const highScore = getHighScore();
+  if (currentScore > highScore) {
+    setHighScore(currentScore);
+    updated = true;
+  }
+  const highTime = getHighTime();
+  if (currentTime > highTime) {
+    setHighTime(currentTime);
+    updated = true;
+  }
+  const highCoins = getHighCoins();
+  if (currentCoins > highCoins) {
+    setHighCoins(currentCoins);
+    updated = true;
+  }
+  if (updated) updateBestStatsDisplay();
+  return updated;
+}
+// ----------------------------------------
 
 // Advanced Synthesizer Web Audio API (Real Space-War Effects)
 let audioCtx = null;
@@ -802,6 +967,8 @@ function updateHUD() {
   } else {
     document.getElementById('bossHud').classList.add('hidden');
   }
+
+  updateBestStatsDisplay();
 }
 
 function spawnParticles(x, y, color, count, speedFactor = 1) {
@@ -1173,15 +1340,22 @@ function gameLoop(timeMs) {
           isGameOver = true;
           updateHUD();
 
-          document.getElementById('runScore').innerText =
-            player.score.toLocaleString();
-          document.getElementById('runTime').innerText =
-            `${Math.floor(gameTime)}s`;
-          document.getElementById('runTier').innerText =
-            `Tier ${player.tier}`;
+          // --- GAME OVER: save highs and display ---
+          const currentScore = player.score;
+          const currentTime = Math.floor(gameTime);
+          const currentCoins = player.coinsCollected;
+          updateHighScores(currentScore, currentTime, currentCoins);
+
+          document.getElementById('runScore').innerText = currentScore.toLocaleString();
+          document.getElementById('runTime').innerText = currentTime + 's';
+          document.getElementById('runTier').innerText = `Tier ${player.tier}`;
           document.getElementById('runLevel').innerText = player.level;
-          document.getElementById('runCoins').innerText = player.coinsCollected;
+          document.getElementById('runCoins').innerText = currentCoins;
           document.getElementById('runGems').innerText = player.gemsCollected;
+
+          // Update best stats display (already updated via updateHighScores, but we refresh)
+          updateBestStatsDisplay();
+
           document.getElementById('gameOverOverlay').classList.remove('hidden');
 
           // Send the final score/time to the parent Space Pulse dashboard.
@@ -1261,19 +1435,10 @@ function restartGame() {
 
 // Prepare the first frame without starting the mission.
 init();
+// Show best stats on start screen and side panel
+updateBestStatsDisplay();
 gameStarted = false;
 requestAnimationFrame(gameLoop);
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
- 
