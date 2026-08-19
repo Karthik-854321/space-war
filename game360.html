@@ -5,215 +5,79 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Space Bullet Heaven - Deluxe Cyberpunk</title>
   <style>
-    * {
-      box-sizing: border-box;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-    body, html {
-      margin: 0;
-      padding: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background: #05050a;
-      font-family: 'Courier New', Courier, monospace;
-      color: #fff;
-    }
-    
-    #gameContainer {
-      display: flex;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background: #05050a;
-    }
-    
-    #gameArea {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-      background: radial-gradient(circle at center, #0a0a15 0%, #05050a 100%);
-    }
-    
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    /* SIDE PANEL */
-    #sidePanel {
-      width: 300px;
-      min-width: 300px;
-      height: 100vh;
-      background: rgba(10, 10, 20, 0.95);
-      border-left: 2px solid #00fff5;
-      padding: 20px;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      box-shadow: -5px 0 25px rgba(0, 255, 245, 0.2);
-      animation: pulseBorder 3s infinite ease-in-out;
-    }
-
-    @keyframes pulseBorder {
-      0%, 100% { box-shadow: -5px 0 15px rgba(0, 255, 245, 0.2); border-left-color: #00fff5; }
-      50% { box-shadow: -5px 0 30px rgba(0, 255, 245, 0.6); border-left-color: #66ffff; }
-    }
-
-    .panel-title {
-      color: #00fff5;
-      font-size: 18px;
-      font-weight: bold;
-      letter-spacing: 3px;
-      border-bottom: 1px solid rgba(0, 255, 245, 0.3);
-      padding-bottom: 12px;
-      text-shadow: 0 0 10px #00fff5;
-    }
-
-    .panel-card {
-      background: rgba(20, 25, 45, 0.8);
-      border: 1px solid rgba(0, 255, 245, 0.15);
-      border-radius: 6px;
-      padding: 14px 16px;
-    }
-
-    .card-label {
-      font-size: 11px;
-      color: #8890b0;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      display: block;
-      margin-bottom: 6px;
-    }
-
-    .card-value {
-      font-size: 16px;
-      font-weight: bold;
-      color: #00fff5;
-      font-family: 'Courier New', monospace;
-      text-shadow: 0 0 5px rgba(0, 255, 245, 0.3);
-    }
-    .card-value.gold { color: #ffcc00; text-shadow: 0 0 5px rgba(255, 204, 0, 0.3); }
-    .card-value.white { color: #fff; }
-
-    /* Progress Bars */
-    .bar-track {
-      width: 100%;
-      height: 8px;
-      background: rgba(0, 0, 0, 0.6);
-      border-radius: 10px;
-      margin-top: 8px;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    .bar-fill-hull {
-      height: 100%;
-      background: linear-gradient(90deg, #e94560, #ff6b81);
-      border-radius: 10px;
-      box-shadow: 0 0 12px #e94560;
-      transition: width 0.3s ease;
-    }
-    .bar-fill-xp {
-      height: 100%;
-      background: linear-gradient(90deg, #ffffff, #00fff5);
-      border-radius: 10px;
-      box-shadow: 0 0 12px #00fff5;
-      transition: width 0.3s ease;
-    }
-
-    /* Resources */
-    .resource-row {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 4px;
-    }
-    .resource-item {
-      font-size: 15px;
-      color: #b0b0e0;
-    }
-    .res-coin { color: #ffcc00; }
-    .res-gem { color: #00ffff; }
-
-    /* Overlays (Now only inside Game Area) */
-    .overlay {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(5, 5, 10, 0.85);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      gap: 15px;
-      z-index: 20;
-      text-align: center;
-      backdrop-filter: blur(4px);
-      border-left: none; /* No border overlay inside the canvas */
-    }
-    .hidden { display: none !important; }
-    
-    .overlay h2 {
-      color: #00fff5;
-      margin: 0;
-      text-shadow: 0 0 15px #00fff5;
-      font-size: 32px;
-      letter-spacing: 2px;
-    }
-    .overlay h2.danger { color: #ff2e63; text-shadow: 0 0 15px #ff2e63; }
-
-    button {
-      padding: 12px 28px;
-      font-size: 16px;
-      font-weight: bold;
-      font-family: 'Courier New', monospace;
-      background: linear-gradient(45deg, #e94560, #ff2e63);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(233, 69, 96, 0.5);
-      transition: transform 0.1s, box-shadow 0.2s;
-    }
-    button:hover { transform: scale(1.05); box-shadow: 0 6px 25px rgba(233, 69, 96, 0.8); }
-    
-    #upgradeOptions button {
-      background: rgba(20, 25, 45, 0.9);
-      border: 1px solid #00fff5;
-      width: 220px;
-      box-shadow: 0 4px 10px rgba(0, 255, 245, 0.2);
-    }
-    #upgradeOptions button:hover {
-      background: rgba(40, 45, 65, 0.9);
-      box-shadow: 0 6px 20px rgba(0, 255, 245, 0.5);
-    }
-
-    #joystickZone {
-      position: absolute;
-      bottom: 30px;
-      left: 30px;
-      width: 120px;
-      height: 120px;
-      background: rgba(0, 255, 245, 0.05);
-      border: 2px solid rgba(0, 255, 245, 0.2);
-      border-radius: 50%;
-      touch-action: none;
-      display: none;
-      z-index: 5;
-    }
-    #joystickKnob {
-      position: absolute;
-      top: 35px;
-      left: 35px;
-      width: 50px;
-      height: 50px;
-      background: radial-gradient(circle, rgba(0,255,245,0.8) 0%, rgba(0,255,245,0.2) 100%);
-      border-radius: 50%;
-      pointer-events: none;
-      box-shadow: 0 0 15px #00fff5;
-    }
-  </style>
+*{box-sizing:border-box;user-select:none;-webkit-user-select:none}
+html,body{
+    margin:0;padding:0;width:100vw;height:100vh;overflow:hidden;
+    background:#050b10;color:#e9eef1;font-family:"Courier New",monospace;
+}
+#gameContainer{
+    display:flex;width:100vw;height:100vh;overflow:hidden;background:#050b10;
+}
+#gameArea{
+    flex:1;position:relative;overflow:hidden;background:#061018;
+}
+canvas{display:block;width:100%;height:100%}
+#sidePanel{
+    width:300px;min-width:300px;height:100vh;
+    background:#0d171e;border-left:1px solid #334b57;
+    padding:18px;display:flex;flex-direction:column;gap:12px;
+}
+.panel-title{
+    color:#e07a3f;font-size:14px;font-weight:bold;
+    letter-spacing:2px;border-bottom:1px solid #334b57;padding-bottom:10px;
+}
+.panel-card{
+    background:#101f28;border:1px solid #263d48;
+    border-radius:2px;padding:12px 14px;
+}
+.card-label{
+    font-size:10px;color:#81949e;text-transform:uppercase;
+    letter-spacing:1px;display:block;margin-bottom:5px;
+}
+.card-value{font-size:15px;font-weight:bold;color:#e9eef1}
+.card-value.gold{color:#d8b45a}
+.card-value.white{color:#fff}
+.bar-track{
+    width:100%;height:8px;background:#071015;
+    border-radius:0;margin-top:7px;overflow:hidden;border:1px solid #344a55;
+}
+.bar-fill-hull{height:100%;background:#b94d4d;transition:width .3s ease}
+.bar-fill-xp{height:100%;background:#c8d1d5;transition:width .3s ease}
+.resource-row{display:flex;justify-content:space-between;margin-top:4px}
+.resource-item{font-size:14px;color:#b8c3c8}
+.res-coin{color:#d8b45a}.res-gem{color:#9db8c4}
+.overlay{
+    position:absolute;inset:0;background:rgba(5,11,16,.95);
+    display:flex;flex-direction:column;justify-content:center;
+    align-items:center;gap:13px;z-index:20;text-align:center;
+}
+.hidden{display:none!important}
+.overlay h2{
+    color:#e07a3f;margin:0;font-size:29px;letter-spacing:1px;
+}
+.overlay h2.danger{color:#c95c5c}
+button{
+    padding:11px 24px;font:bold 14px "Courier New",monospace;
+    background:#e07a3f;color:#101316;border:1px solid #e07a3f;
+    border-radius:2px;cursor:pointer;box-shadow:4px 4px 0 #020609;
+}
+button:hover{transform:translate(-2px,-2px);background:#ef8d55}
+#upgradeOptions button{
+    background:#101f28;border:1px solid #526b76;color:#e9eef1;
+    width:220px;box-shadow:3px 3px 0 #020609;
+}
+#upgradeOptions button:hover{background:#172b36;border-color:#e07a3f}
+#joystickZone{
+    position:absolute;bottom:30px;left:30px;width:120px;height:120px;
+    background:#0d1d25;border:1px solid #536b76;border-radius:50%;
+    touch-action:none;display:none;z-index:5;
+}
+#joystickKnob{
+    position:absolute;top:35px;left:35px;width:50px;height:50px;
+    background:#d6dde0;border:2px solid #334953;border-radius:50%;
+    pointer-events:none;
+}
+</style>
 </head>
 <body>
 

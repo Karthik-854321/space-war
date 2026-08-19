@@ -8,316 +8,120 @@
 <title>SPACE WAR — War Zone Selection</title>
 
 <style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+:root{
+    --bg:#071018;
+    --panel:#0d1922;
+    --panel-2:#101f2a;
+    --line:#29404d;
+    --text:#e8edf0;
+    --muted:#8ea0aa;
+    --accent:#e07a3f;
+    --accent-soft:#c65d2b;
+    --good:#8dbf8a;
+    --gold:#d8b45a;
 }
-
-html,
-body {
-    width: 100%;
-    min-height: 100%;
-    font-family: Arial, Helvetica, sans-serif;
-    background:
-        radial-gradient(circle at 50% 20%, #172554 0%, #020617 45%, #000 100%);
-    color: white;
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+    min-height:100%;
+    font-family:Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    color:var(--text);
 }
-
-body {
-    min-height: 100vh;
-    overflow-x: hidden;
+body{min-height:100vh;overflow-x:hidden}
+.stars{display:none}
+.page{width:min(1120px,92%);margin:auto;padding:42px 0 28px}
+.header{
+    text-align:left;
+    margin-bottom:30px;
+    border-left:4px solid var(--accent);
+    padding:4px 0 6px 18px;
 }
-
-/* =========================
-   BACKGROUND
-========================= */
-
-.stars {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-    z-index: 0;
+.kicker{
+    color:var(--accent);
+    font:700 11px/1.2 "Courier New",monospace;
+    letter-spacing:3px;
+    margin-bottom:9px;
 }
-
-.star {
-    position: absolute;
-    width: 2px;
-    height: 2px;
-    background: white;
-    border-radius: 50%;
-    opacity: .7;
-    animation: twinkle 3s infinite alternate;
+.title{
+    font:800 clamp(38px,7vw,70px)/.95 Arial,Helvetica,sans-serif;
+    letter-spacing:-2px;
 }
-
-@keyframes twinkle {
-    from { opacity: .2; }
-    to   { opacity: 1; }
+.subtitle{margin-top:10px;color:var(--muted);font-size:14px}
+.mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.mode-card{
+    position:relative;
+    min-height:390px;
+    padding:25px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-top:3px solid var(--accent);
+    box-shadow:6px 6px 0 #03080c;
+    transition:transform .16s ease,border-color .16s ease;
 }
-
-/* =========================
-   MAIN
-========================= */
-
-.page {
-    position: relative;
-    z-index: 1;
-    width: min(1200px, 94%);
-    margin: auto;
-    padding: 50px 0;
+.mode-card:hover{transform:translateY(-3px);border-color:#496170}
+.mode-number{
+    position:absolute;right:18px;top:12px;
+    font:700 56px/1 Arial,Helvetica,sans-serif;
+    color:#172a35;
 }
-
-/* =========================
-   HEADER
-========================= */
-
-.header {
-    text-align: center;
-    margin-bottom: 45px;
+.mode-icon{font-size:34px;margin-bottom:16px}
+.mode-card h2{font-size:25px;letter-spacing:.5px;margin-bottom:6px}
+.mode-type{
+    color:var(--accent);
+    font:700 11px/1 "Courier New",monospace;
+    letter-spacing:2px;
+    margin-bottom:18px;
 }
-
-.kicker {
-    color: #00fff5;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 5px;
-    margin-bottom: 12px;
+.mode-description{color:#b4c0c6;line-height:1.6;min-height:76px;font-size:14px}
+.features{list-style:none;margin:18px 0}
+.features li{padding:6px 0;color:#cbd4d8;font-size:13px;border-bottom:1px dotted #253843}
+.features li:last-child{border-bottom:0}
+.features li::before{content:"+";color:var(--accent);margin-right:9px;font-weight:bold}
+.play-button{
+    width:100%;padding:13px;
+    border:1px solid var(--accent);
+    background:var(--accent);
+    color:#101316;
+    font:800 12px "Courier New",monospace;
+    letter-spacing:1px;
+    cursor:pointer;
+    transition:background .15s ease,color .15s ease;
 }
-
-.title {
-    font-size: clamp(42px, 8vw, 82px);
-    font-weight: 1000;
-    letter-spacing: 5px;
-    text-shadow:
-        0 0 15px rgba(0,255,245,.7),
-        0 0 40px rgba(0,255,245,.25);
+.play-button:hover{background:transparent;color:var(--accent)}
+.records-section{margin-top:26px}
+.records-title{text-align:left;margin-bottom:14px}
+.records-title h2{font-size:20px;letter-spacing:1px}
+.records-title p{color:#6f818b;margin-top:5px;font-size:12px}
+.records-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.record-card{
+    padding:18px 20px;
+    background:var(--panel);
+    border:1px solid var(--line);
 }
-
-.subtitle {
-    margin-top: 14px;
-    color: #94a3b8;
-    font-size: 15px;
+.record-card h3{
+    color:var(--accent);
+    font:700 12px "Courier New",monospace;
+    letter-spacing:1.5px;
+    margin-bottom:12px;
 }
-
-/* =========================
-   MODE GRID
-========================= */
-
-.mode-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 28px;
+.record-row{
+    display:flex;justify-content:space-between;
+    padding:10px 0;border-bottom:1px solid #1b2b34;
+    font-size:13px;
 }
-
-.mode-card {
-    position: relative;
-    min-height: 420px;
-    padding: 32px;
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(15,23,42,.95),
-            rgba(2,6,23,.96)
-        );
-
-    border: 1px solid rgba(255,255,255,.15);
-    box-shadow:
-        0 20px 60px rgba(0,0,0,.45),
-        inset 0 0 40px rgba(0,255,245,.03);
-
-    transition:
-        transform .25s ease,
-        border-color .25s ease,
-        box-shadow .25s ease;
-
-    overflow: hidden;
+.record-row:last-child{border-bottom:0}
+.record-label{color:var(--muted)}
+.record-value{color:var(--text);font-weight:700}
+.best{color:var(--gold)}
+.footer{
+    text-align:left;color:#53646d;font:11px "Courier New",monospace;
+    margin-top:24px;border-top:1px solid #172831;padding-top:12px;
 }
-
-.mode-card:hover {
-    transform: translateY(-8px);
-    border-color: #00fff5;
-    box-shadow:
-        0 25px 70px rgba(0,0,0,.6),
-        0 0 30px rgba(0,255,245,.12);
-}
-
-.mode-number {
-    position: absolute;
-    right: 20px;
-    top: 12px;
-
-    font-size: 80px;
-    font-weight: 1000;
-    color: rgba(255,255,255,.035);
-}
-
-.mode-icon {
-    font-size: 48px;
-    margin-bottom: 20px;
-}
-
-.mode-card h2 {
-    font-size: 32px;
-    letter-spacing: 2px;
-    margin-bottom: 8px;
-}
-
-.mode-type {
-    color: #00fff5;
-    font-size: 12px;
-    font-weight: 900;
-    letter-spacing: 3px;
-    margin-bottom: 20px;
-}
-
-.mode-description {
-    color: #94a3b8;
-    line-height: 1.7;
-    min-height: 80px;
-}
-
-.features {
-    list-style: none;
-    margin: 22px 0;
-}
-
-.features li {
-    padding: 7px 0;
-    color: #cbd5e1;
-    font-size: 14px;
-}
-
-.features li::before {
-    content: "▸";
-    color: #00fff5;
-    margin-right: 10px;
-}
-
-.play-button {
-    width: 100%;
-    padding: 15px;
-
-    border: 2px solid #00fff5;
-    background: #00fff5;
-    color: #020617;
-
-    font-size: 15px;
-    font-weight: 1000;
-    letter-spacing: 2px;
-
-    cursor: pointer;
-
-    transition: .2s;
-}
-
-.play-button:hover {
-    background: transparent;
-    color: #00fff5;
-    box-shadow: 0 0 25px rgba(0,255,245,.25);
-}
-
-/* =========================
-   RECORDS
-========================= */
-
-.records-section {
-    margin-top: 35px;
-}
-
-.records-title {
-    text-align: center;
-    margin-bottom: 22px;
-}
-
-.records-title h2 {
-    font-size: 25px;
-    letter-spacing: 3px;
-}
-
-.records-title p {
-    color: #64748b;
-    margin-top: 7px;
-    font-size: 13px;
-}
-
-.records-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-}
-
-.record-card {
-    padding: 24px;
-
-    background: rgba(15,23,42,.75);
-    border: 1px solid rgba(255,255,255,.1);
-}
-
-.record-card h3 {
-    color: #00fff5;
-    margin-bottom: 20px;
-    letter-spacing: 2px;
-}
-
-.record-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,.07);
-}
-
-.record-row:last-child {
-    border-bottom: none;
-}
-
-.record-label {
-    color: #94a3b8;
-}
-
-.record-value {
-    color: white;
-    font-weight: 900;
-}
-
-.best {
-    color: #ffd700;
-}
-
-/* =========================
-   FOOTER
-========================= */
-
-.footer {
-    text-align: center;
-    color: #475569;
-    font-size: 12px;
-    margin-top: 35px;
-}
-
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 800px) {
-
-    .page {
-        padding: 30px 0;
-    }
-
-    .mode-grid,
-    .records-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .mode-card {
-        min-height: auto;
-    }
-
-    .title {
-        letter-spacing: 2px;
-    }
+@media(max-width:800px){
+    .page{padding:25px 0 20px}
+    .mode-grid,.records-grid{grid-template-columns:1fr}
+    .mode-card{min-height:auto}
+    .title{letter-spacing:-1px}
 }
 </style>
 </head>

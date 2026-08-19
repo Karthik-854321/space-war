@@ -1,311 +1,143 @@
-z<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Hyperion: Space Defender</title>
   <style>
-    * {
-      box-sizing: border-box;
-      user-select: none;
-      -webkit-user-select: none;
-      margin: 0;
-      padding: 0;
-    }
-    body, html {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #020208;
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      color: #ffffff;
-    }
-    #gameContainer {
-      display: flex;
-      width: 100vw;
-      height: 100vh;
-      position: relative;
-    }
-    /* 75% Active War Zone */
-    #warZone {
-      position: relative;
-      width: 75%;
-      height: 100vh;
-      background: radial-gradient(circle at 50% 80%, #0d1127 0%, #020208 100%);
-      overflow: hidden;
-    }
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-    /* 25% Command & Telemetry Sidebar */
-    #sidePanel {
-      width: 25%;
-      height: 100vh;
-      background: rgba(10, 15, 30, 0.95);
-      border-left: 2px solid #00fff5;
-      box-shadow: -5px 0 25px rgba(0, 255, 245, 0.2);
-      padding: 24px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      z-index: 5;
-      backdrop-filter: blur(10px);
-    }
-    .panel-header {
-      font-size: 16px;
-      font-weight: 900;
-      letter-spacing: 2px;
-      color: #00fff5;
-      text-transform: uppercase;
-      border-bottom: 1px solid rgba(0, 255, 245, 0.3);
-      padding-bottom: 8px;
-      text-shadow: 0 0 10px rgba(0, 255, 245, 0.5);
-    }
-    .stat-box {
-      background: rgba(15, 23, 42, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      padding: 12px;
-    }
-    .stat-label {
-      font-size: 12px;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
-    }
-    .stat-value {
-      font-size: 20px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-    .bar-container {
-      width: 100%;
-      height: 14px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 7px;
-      overflow: hidden;
-      margin-top: 6px;
-    }
-    .overlay {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(2, 3, 12, 0.92);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      gap: 15px;
-      z-index: 10;
-      padding: 20px;
-      text-align: center;
-      backdrop-filter: blur(8px);
-    }
-    .hidden { display: none !important; }
-    .stats-card {
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid #00fff5;
-      border-radius: 12px;
-      padding: 20px 30px;
-      margin-bottom: 15px;
-      min-width: 320px;
-      text-align: left;
-      box-shadow: 0 0 20px rgba(0, 255, 245, 0.25);
-    }
-    .stats-card p {
-      margin: 10px 0;
-      font-size: 16px;
-      color: #94a3b8;
-    }
-    .stats-card strong {
-      color: #00fff5;
-      float: right;
-    }
-    .stats-card .best-row {
-      color: #ffd700;
-    }
-    button {
-      padding: 14px 28px;
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      background: linear-gradient(135deg, #00c6ff, #0072ff);
-      color: white;
-      border: 2px solid #ffffff;
-      border-radius: 0;
-      cursor: pointer;
-      box-shadow: 4px 4px 0 #000;
-      transition: all 0.2s ease;
-    }
-    button:hover {
-      transform: translate(-2px,-2px);
-      box-shadow: 6px 6px 0 #000;
-    }
-    #upgradeOptions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 15px;
-      max-width: 700px;
-    }
-    #upgradeOptions button {
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      border: 1px solid #00fff5;
-      width: 210px;
-      text-transform: none;
-      letter-spacing: normal;
-      box-shadow: 0 4px 12px rgba(0, 255, 245, 0.15);
-      padding: 16px;
-      text-align: center;
-    }
-    #upgradeOptions button:hover {
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      border-color: #38bdf8;
-      box-shadow: 0 6px 20px rgba(0, 255, 245, 0.4);
-    }
-    #joystickZone {
-      position: absolute;
-      bottom: 30px;
-      left: 30px;
-      width: 120px;
-      height: 120px;
-      background: rgba(0, 255, 245, 0.05);
-      border: 2px solid rgba(0, 255, 245, 0.2);
-      border-radius: 50%;
-      touch-action: none;
-      display: none;
-      z-index: 5;
-    }
-    #joystickKnob {
-      position: absolute;
-      top: 35px;
-      left: 35px;
-      width: 50px;
-      height: 50px;
-      background: radial-gradient(circle, rgba(0,255,245,0.8) 0%, rgba(0,255,245,0.2) 100%);
-      border-radius: 50%;
-      pointer-events: none;
-      box-shadow: 0 0 12px #00fff5;
-    }
-    #bossHud {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 320px;
-      text-align: center;
-      z-index: 4;
-    }
-
-    /* Start screen */
-    .start-overlay {
-      position: absolute;
-      inset: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background: rgba(0, 0, 0, 0.84);
-    }
-    .start-overlay.hidden { display: none; }
-    .start-panel {
-      width: min(520px, 90%);
-      padding: 28px;
-      background: #111;
-      border: 2px solid #fff;
-      box-shadow: 6px 6px 0 #000;
-      color: #fff;
-    }
-    .start-kicker {
-      color: #ff5a00;
-      font: 700 11px monospace;
-      letter-spacing: 0.12em;
-    }
-    .start-panel h1 {
-      margin: 8px 0;
-      font-size: 42px;
-      line-height: 1;
-    }
-    .start-panel p {
-      color: #b8b8b8;
-      line-height: 1.5;
-    }
-    .controls-guide {
-      margin: 22px 0;
-      padding: 16px;
-      border: 1px solid #555;
-      background: #181818;
-    }
-    .controls-guide h3 {
-      margin: 0 0 14px;
-      font: 700 11px monospace;
-      color: #ff5a00;
-    }
-    .key-row {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin: 10px 0;
-      font-size: 12px;
-    }
-    .key {
-      min-width: 30px;
-      height: 30px;
-      display: inline-grid;
-      place-items: center;
-      border: 1px solid #aaa;
-      background: #242424;
-      font: 700 12px monospace;
-    }
-    .key.wide { min-width: 42px; }
-    .guide-tip {
-      margin-bottom: 0;
-      font-size: 11px;
-    }
-    .start-game-button {
-      width: 100%;
-      padding: 14px;
-      border: 2px solid #fff;
-      background: #ff5a00;
-      color: #fff;
-      cursor: pointer;
-      font: 800 13px monospace;
-      box-shadow: 4px 4px 0 #000;
-    }
-    .start-game-button:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: 6px 6px 0 #000;
-    }
-    #bestStats {
-      margin-top: 16px;
-      padding: 12px;
-      background: #181818;
-      border: 1px solid #333;
-      border-radius: 4px;
-      text-align: left;
-      font-size: 13px;
-      color: #aaa;
-    }
-    #bestStats .best-title {
-      font-weight: 700;
-      color: #ffd700;
-      margin-bottom: 4px;
-    }
-    #bestStats span {
-      color: #fff;
-    }
-    @media (max-width: 600px) {
-      .start-panel { padding: 20px; }
-      .start-panel h1 { font-size: 34px; }
-      .start-overlay { padding: 14px; }
-    }
-  </style>
+*{box-sizing:border-box;user-select:none;-webkit-user-select:none;margin:0;padding:0}
+html,body{
+    width:100%;height:100%;overflow:hidden;
+    background:#050b10;color:#e9eef1;
+    font-family:Arial,Helvetica,sans-serif;
+}
+#gameContainer{display:flex;width:100vw;height:100vh;position:relative}
+#warZone{
+    position:relative;width:75%;height:100vh;
+    background:#061018;overflow:hidden;
+}
+canvas{display:block;width:100%;height:100%}
+#sidePanel{
+    width:25%;height:100vh;
+    background:#0d171e;
+    border-left:1px solid #334b57;
+    padding:20px 16px;
+    display:flex;flex-direction:column;gap:12px;
+    z-index:5;
+}
+.panel-header{
+    font:700 13px "Courier New",monospace;
+    letter-spacing:1.5px;color:#e07a3f;
+    border-bottom:1px solid #334b57;
+    padding-bottom:9px;
+}
+.stat-box{
+    background:#101f28;
+    border:1px solid #263d48;
+    border-radius:2px;
+    padding:11px;
+}
+.stat-label{
+    font:700 10px "Courier New",monospace;
+    color:#81949e;
+    letter-spacing:1px;
+    margin-bottom:5px;
+}
+.stat-value{font-size:18px;font-weight:700;color:#edf2f4}
+.bar-container{
+    width:100%;height:10px;
+    background:#071015;border:1px solid #344a55;
+    border-radius:0;overflow:hidden;margin-top:6px;
+}
+.overlay{
+    position:absolute;inset:0;
+    background:rgba(5,11,16,.94);
+    display:flex;flex-direction:column;
+    justify-content:center;align-items:center;
+    gap:13px;z-index:10;padding:20px;text-align:center;
+}
+.hidden{display:none!important}
+.stats-card{
+    background:#0f1b22;border:1px solid #425762;
+    border-radius:2px;padding:18px 24px;
+    margin-bottom:12px;min-width:310px;
+    text-align:left;box-shadow:5px 5px 0 #020609;
+}
+.stats-card p{margin:9px 0;font-size:14px;color:#9cadb5}
+.stats-card strong{color:#e07a3f;float:right}
+.stats-card .best-row{color:#d8b45a}
+button{
+    padding:12px 24px;font:700 13px "Courier New",monospace;
+    letter-spacing:.8px;text-transform:uppercase;
+    background:#e07a3f;color:#101316;
+    border:1px solid #e07a3f;border-radius:2px;
+    cursor:pointer;box-shadow:4px 4px 0 #020609;
+    transition:transform .12s ease,background .12s ease;
+}
+button:hover{transform:translate(-2px,-2px);background:#ef8d55}
+#upgradeOptions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;max-width:700px}
+#upgradeOptions button{
+    background:#101f28;border:1px solid #526b76;
+    color:#e9eef1;width:210px;text-transform:none;
+    letter-spacing:0;box-shadow:3px 3px 0 #020609;
+    padding:15px;text-align:center;
+}
+#upgradeOptions button:hover{background:#172b36;border-color:#e07a3f}
+#joystickZone{
+    position:absolute;bottom:30px;left:30px;width:120px;height:120px;
+    background:#0d1d25;border:1px solid #536b76;border-radius:50%;
+    touch-action:none;display:none;z-index:5;
+}
+#joystickKnob{
+    position:absolute;top:35px;left:35px;width:50px;height:50px;
+    background:#d6dde0;border:2px solid #334953;border-radius:50%;
+    pointer-events:none;
+}
+#bossHud{
+    position:absolute;top:20px;left:50%;
+    transform:translateX(-50%);width:320px;text-align:center;z-index:4;
+}
+.start-overlay{
+    position:absolute;inset:0;z-index:100;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;background:rgba(4,9,13,.95);
+}
+.start-overlay.hidden{display:none}
+.start-panel{
+    width:min(520px,90%);padding:26px;
+    background:#0d171e;border:1px solid #526873;
+    box-shadow:7px 7px 0 #020609;color:#fff;
+}
+.start-kicker{color:#e07a3f;font:700 11px monospace;letter-spacing:.12em}
+.start-panel h1{margin:8px 0;font-size:40px;line-height:1}
+.start-panel p{color:#aab7bd;line-height:1.5}
+.controls-guide{margin:20px 0;padding:14px;border:1px solid #2d444f;background:#101f28}
+.controls-guide h3{margin:0 0 12px;font:700 11px monospace;color:#e07a3f}
+.key-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:9px 0;font-size:12px}
+.key{
+    min-width:29px;height:29px;display:inline-grid;place-items:center;
+    border:1px solid #536a75;background:#0a141a;
+    font:700 12px monospace;color:#dce3e6;
+}
+.key.wide{min-width:42px}
+.guide-tip{margin-bottom:0;font-size:11px}
+.start-game-button{
+    width:100%;padding:13px;border:1px solid #e07a3f;
+    background:#e07a3f;color:#101316;cursor:pointer;
+    font:800 12px monospace;box-shadow:4px 4px 0 #020609;
+}
+.start-game-button:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 #020609}
+#bestStats{
+    margin-top:15px;padding:11px;background:#101f28;
+    border:1px solid #2d444f;border-radius:2px;
+    text-align:left;font-size:12px;color:#9cadb5;
+}
+#bestStats .best-title{font-weight:700;color:#d8b45a;margin-bottom:4px}
+#bestStats span{color:#edf2f4}
+@media(max-width:600px){
+    .start-panel{padding:19px}.start-panel h1{font-size:33px}.start-overlay{padding:12px}
+}
+</style>
 </head>
 <body>
 

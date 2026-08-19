@@ -1,133 +1,153 @@
-# 🚀 Space War
+# Space War
 
-A self-contained browser-based space shooting game built from scratch, focused on gameplay, progression, survival and replayability.
+Space War is a browser-based space shooter I built to learn how to make a game without using a game engine.
 
-Space War provides an alternative combat experience through the means of its two distinct war zones. The player chooses the battlefield and has to survive enemy waves, upgrade their ship, gather resources and break their previous personal best records.
+The project has two different war zones. They use different combat styles, so the player can choose the type of game they want to play.
 
-## 🎮 Game Modes
+## Game modes
 
 ### 180° War Zone
 
-A more linear and traditional combat-focused game-play featuring
+This is the more straightforward combat mode. Enemies come from the front and the player focuses on movement, aiming, shooting and surviving enemy waves.
+
+It includes:
 
 - Enemy waves
 - Ship movement and aiming
 - Weapon and ship upgrades
-- Resource gathering
-
+- Resource collection
 - Increasing difficulty
-
-- Survival-focused game-play
+- Survival-based scoring
 
 ### 360° War Zone
 
-A more open and versatile space shooting game-play, where enemies can approach from any direction, featuring
-- Open space movement
+This mode uses the whole play area. Enemies can approach from different directions, so movement and positioning become more important.
 
+It includes:
+
+- Free movement
 - Enemy waves
 - Ship progression
-- Gems and coins
-- Upgrade selection
-- Bosses
+- Coins and gems
+- Upgrade choices
+- Boss battles
 - Increasing difficulty
-The two game modes are not mere variations of each other but instead provide a different game-play experience.
-## 🏆 Records
-The game keeps track of the player’s progress to provide them with an added sense of accomplishment, and to give them a goal to strive for in their next attempt. The game tracks, depending on the game mode:
+
+The two modes are intentionally different instead of being the same game with a different screen.
+
+## Records
+
+The game keeps local records for the different war zones. Depending on the mode, the game records things such as:
+
 - Highest score
-- Survival time
-- Number of missions
-- Gathered resources
-- Previous run’s information
-The data is kept in the browser’s local storage (`localStorage`) for later use.
-## 🕹️ Controls
-### Desktop
-The game utilizes the control scheme provided by the selected game mode.
-### Mobile
-Mobile controls are implemented wherever applicable.
-The game features responsive design.
-## ⚙️ Gameplay Systems
-Space War includes numerous gameplay systems, among which are:
+- Best survival time
+- Number of runs or missions
+- Collected resources
+- Previous run information
+
+The records are stored with browser `localStorage`, so there is no database or online account involved.
+
+## Gameplay systems
+
+The game contains systems for:
+
 - Player movement
 - Enemy spawning
 - Collision detection
 - Projectile movement
-- Enemy damaging and destruction
+- Enemy damage and destruction
 - Health and survival
-- Experience and resource gathering
-- Leveling and progression
-- Upgrade selection
-- Difficulty balancing
+- XP and resources
+- Leveling
+- Ship upgrades
+- Difficulty progression
 - Particles and screen effects
-- Screen shaking and feedback
+- Screen shake
 - Sound effects
-- Record keeping and progression
-The mathematical formulas, game-play rules, calculations, progression systems, enemy behavior and patterns, and other systems have been created by me.
-## 📈 Progression
-The game’s progression is focused around the player’s ability to survive for as long as possible. The player can upgrade their ship in various ways to prepare for future, more challenging encounters.
-The general progression loop is as follows:
-```
-Choose War Zone
-↓
-Start Combat
-↓
-Fight Enemies
-↓
-Gather Resources
-↓
-Level Up
-↓
+- Record keeping
 
-Upgrade Ship
-↓
-Survive Longer
-↓
-Set New Record
+The formulas, calculations, gameplay rules, enemy behaviour, progression, scoring and other core game systems were designed and implemented by me.
+
+## Progression
+
+The basic loop is:
+
+```text
+Choose a war zone
+      ↓
+Start the run
+      ↓
+Fight enemies
+      ↓
+Collect resources
+      ↓
+Level up
+      ↓
+Choose upgrades
+      ↓
+Survive longer
+      ↓
+Try to beat the previous record
 ```
-## 🎨 UI & UX
-The user interface features a dark cosmic theme, neon lighting, combat-related HUD, selection menus, upgrade system, record progression screen, and responsive design.
-The AI was used exclusively to assist in the development of the UI/UX by suggesting improvements and adjustments to the current design. Aside from cosmetic improvements, the AI also helped with usability-related suggestions for the game’s UI/UX.
-Myself was responsible for implementing all the game design, development, and systems.
-## 🤖 AI Usage
-The AI was used as an assistant during the development of the game, primarily focused on providing UI/UX suggestions and improvements. The AI was used to suggest visual improvements, alterations to the design, and recommendations to enhance the overall appearance and experience.
-However, all of the game’s core systems, design, development, mathematical formulas, calculation systems, enemy behavior and patterns, progression, upgrade system, record keeping and other game-related systems have been designed and implemented by myself.
-The AI was not utilized to generate the game’s core systems or fundamental mechanics.
-## 🛠️ Technology
-Space War is built using standard web technologies such as HTML, CSS, and JavaScript. The game uses HTML5 canvas and utilizes the browser’s local storage and Web Audio API.
-## 📂 Project Structure
-A basic project structure could be as follows:
-```
+
+## Controls
+
+The controls depend on the selected game mode. Desktop keyboard controls are supported, and the game also includes mobile controls where applicable.
+
+## Technology
+
+The project uses:
+
+- HTML
+- CSS
+- JavaScript
+- HTML5 Canvas
+- Web Audio API
+- Browser localStorage
+
+There is no backend server.
+
+## Running it
+
+Keep these three files in the same folder:
+
+```text
 Space-War/
-│
 ├── index.html
 ├── game180.html
 └── game360.html
 ```
-Where `index.html` serves as the selection screen, and the other two files contain the actual implementation of the games.
-## ▶️ Running the Project
-There is no complex setup required to get the game up and running.
-1. Get the code.
-2. Place the HTML files in the same directory/folder.
-3. Open the `index.html` file in your favorite browser.
-4. Select the desired battlefield.
-5. Play the game!
-Make sure to use a modern web browser that supports HTML5 canvas and Web Audio API.
-## 💾 Data & Privacy
-The game stores the player’s data locally in the browser. There is no need for an external backend server. Deleting the browser’s local storage for the domain saves all the game data.
-## 🎯 Project Goal
-The goal of this project was not only to create a standard shooter game, but also to develop a project where the player can choose their preferred way of playing, upgrade their ship, learn the game mechanics and patterns, survive as long as possible, keep track of their achievements and records, and strive to improve their skills and break their personal best.
-For myself, this project serves as a learning experience, as I aim to develop my own game mechanics and gameplay systems, rather than relying on a game engine.
-## 🚧 Future Improvements
-Future improvements and additions could include:
-- Additional game modes
-- Additional enemies
-- Additional bosses
-- Additional ships
-- Additional upgrades
-- Global record leaderboard
-- Additional progression tracking systems
-- Additional effects and upgrades
-- Additional challenges and difficulties
-- Multiplayer game modes
-## 👨‍💻 Developer
-This game has been created and developed by myself as a hobby project. The game mechanics, mathematical formulas, logic, gameplay systems, progression design, calculations, and implementation have all been done by myself. The AI has been used exclusively as an assistant to help polish the game’s UI/UX.
---- Choose your battlefield. Survive the waves. Upgrade your ship. Beat your personal best and record.
+
+Open `index.html` in a modern browser and select a war zone.
+
+## Why I built it
+
+I wanted to understand game development by actually building the systems myself instead of depending on a game engine.
+
+The parts I learned the most from were the gameplay calculations, enemy behaviour, collision handling, progression and difficulty balancing.
+
+## AI usage
+
+I used AI as an assistant for UI/UX work. I already had the game structure and gameplay systems, then used AI to suggest and refine parts of the visual presentation, CSS and interface.
+
+The core game logic was not generated by AI. The formulas, calculations, gameplay rules, enemy behaviour, progression, scoring and game systems were developed and implemented by me.
+
+I am documenting this because I want the project to be clear about where AI was and was not used.
+
+## Future ideas
+
+Some things I may add later:
+
+- More enemies
+- More bosses
+- More ships
+- More upgrades
+- Additional challenges
+- More game modes
+- Better progression tracking
+- A global leaderboard
+- Multiplayer
+
+## Developer
+
+Space War is a personal hobby project and a learning project. The main goal was to understand how the systems behind a simple space shooter work by building them myself.
