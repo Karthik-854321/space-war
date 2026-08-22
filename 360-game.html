@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Space War - 90s Edition</title>
+  <style>
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Courier New', Courier, monospace; color: #fff; }
+    #gameContainer { position: relative; width: 100%; height: 100%; }
+    canvas { display: block; width: 100%; height: 100%; background: #000; image-rendering: pixelated; }
+    
+    .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px; z-index: 10; padding: 20px; text-align: center; }
+    .hidden { display: none !important; }
+    
+    .stats-card { background: #000; border: 2px solid #fff; padding: 20px; min-width: 280px; text-align: left; margin-bottom: 15px; }
+    .stats-card p { margin: 8px 0; font-size: 16px; color: #fff; }
+    .stats-card strong { color: #0f0; float: right; }
+    
+    button { padding: 10px 18px; font-size: 16px; font-weight: bold; background: #000; color: #fff; border: 2px solid #fff; cursor: pointer; font-family: 'Courier New', Courier, monospace; text-transform: uppercase; }
+    button:hover { background: #fff; color: #000; }
+    
+    #upgradeOptions button { width: 280px; text-align: left; margin: 5px; }
+    #upgradeOptions button:hover { background: #fff; color: #000; }
+    #upgradeOptions button:hover small { color: #000 !important; }
+    
+    #joystickZone { position: absolute; bottom: 30px; left: 30px; width: 120px; height: 120px; border: 2px solid #fff; border-radius: 50%; touch-action: none; display: none; z-index: 5; }
+    #joystickKnob { position: absolute; top: 35px; left: 35px; width: 50px; height: 50px; background: #fff; border-radius: 50%; pointer-events: none; }
+    
+    /* HUD Layout */
+    #hud { position: absolute; top: 15px; left: 15px; z-index: 4; pointer-events: none; }
+    .hud-records { font-size: 13px; font-weight: bold; color: #0f0; margin-bottom: 6px; letter-spacing: 1px; }
+    .hud-main { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+    .bar-bg { width: 180px; background: #000; border: 2px solid #fff; margin-bottom: 5px; overflow: hidden; }
+    .bar-bg.hp-low { border-color: #f00 !important; background: #400; }
+    
+    /* Top Right Controls (New Feature) */
+    #topControls { position: absolute; top: 15px; right: 15px; z-index: 6; display: flex; gap: 10px; }
+    .small-btn { padding: 6px 12px; font-size: 14px; }
+    
+    h2 { text-transform: uppercase; margin: 0; font-size: 28px; letter-spacing: 2px; }
+    
+    /* Low Health Alert Popup */
+    #lowHpBanner {
+      background: #f00; color: #fff; padding: 10px 16px; border: 2px solid #fff;
+      font-weight: bold; font-size: 14px; max-width: 300px; margin-bottom: 10px;
+      animation: flash 0.5s infinite alternate;
+    }
+    @keyframes flash { from { opacity: 1; } to { opacity: 0.5; } }
+  </style>
+</head>
+<body>
+<div id="gameContainer">
+  <canvas id="canvas"></canvas>
+  
+  <div id="hud">
+    <div class="hud-records">HI-SCORE: <span id="hudHighScore">0</span> | BEST: <span id="hudBestTime">0s</span></div>
+    <div class="hud-main">LVL: <span id="hudLevel">1</span> | SCR: <span id="hudScore">0</span> | T: <span id="hudTime">0s</span></div>
+    <div class="bar-bg" id="hpBarBg" style="height:14px;"><div id="hpBar" style="width:100%;height:100%;background:#f00;"></div></div>
+    <div class="bar-bg" style="height:10px;"><div id="xpBar" style="width:0;height:100%;background:#0f0;"></div></div>
+  </div>
+
+  <div id="topControls">
+    <button id="btnMute" class="small-btn" onclick="toggleMute()">SND: ON</button>
+    <button id="btnPause" class="small-btn" onclick="togglePause()">PAUSE</button>
+  </div>
+
+  <div id="joystickZone"><div id="joystickKnob"></div></div>
+
+  <div id="levelUpOverlay" class="overlay hidden">
+    <div id="lowHpBanner" class="hidden">WARNING: HULL INTEGRITY LOW!<br>UPGRADE FULL HEALTH RECOMMENDED</div>
+    <h2>System Upgrade</h2>
+    <p style="margin:5px 0 15px;color:#ccc">SELECT MODULE:</p>
+    <div id="upgradeOptions" style="display:flex;flex-direction:column;align-items:center;gap:5px"></div>
+  </div>
+
+  <div id="gameOverOverlay" class="overlay hidden">
+    <h2>MISSION FAILED</h2>
+    <div class="stats-card">
+      <p>SCORE: <strong id="runScore">0</strong></p>
+      <p>TIME: <strong id="runTime">0s</strong></p>
+      <p>LEVEL: <strong id="runLevel">1</strong></p>
+      <hr style="border-color:#fff;margin:15px 0; border-style: dashed;">
+      <p>BEST TIME: <strong id="bestTime">0s</strong></p>
+      <p>HI-SCORE: <strong id="highScore">0</strong></p>
+    </div>
+    <button onclick="restartGame()">SYSTEM REBOOT</button>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id), TAU = Math.PI * 2, canvas = $('canvas'), ctx = canvas.getContext('2d');
+const DOM = { 
+  level: $('hudLevel'), time: $('hudTime'), score: $('hudScore'), hp: $('hpBar'), hpBg: $('hpBarBg'), xp: $('xpBar'), 
+  hudHi: $('hudHighScore'), hudBest: $('hudBestTime'), btnMute: $('btnMute'), btnPause: $('btnPause'),
+  levelUp: $('levelUpOverlay'), gameOver: $('gameOverOverlay'), upgradeOpts: $('upgradeOptions'), 
+  runScore: $('runScore'), runTime: $('runTime'), runLevel: $('runLevel'), bestTime: $('bestTime'), 
+  highScore: $('highScore'), joyZone: $('joystickZone'), joyKnob: $('joystickKnob'), lowHpBanner: $('lowHpBanner')
+};
+
+const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+window.addEventListener('resize', resize); resize();
+
+const STORAGE_KEY = 'space_war_90s';
+const loadStats = () => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { highScore: 0, bestTime: 0 }; } catch { return { highScore: 0, bestTime: 0 }; } };
+const saveStats = (runScore, runTime) => {
+  const s = loadStats();
+  s.highScore = Math.max(s.highScore, runScore); s.bestTime = Math.max(s.bestTime, runTime);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); return s;
+};
+
+let audioCtx = null, isMuted = false, isPaused = false;
+const initAudio = () => { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); };
+const playSynth = (f, t, d, v, sf = null) => {
+  if (isMuted || !audioCtx) return;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain(), now = audioCtx.currentTime;
+  o.type = t; o.connect(g); g.connect(audioCtx.destination);
+  o.frequency.setValueAtTime(f, now);
+  if (sf) o.frequency.exponentialRampToValueAtTime(sf, now + d);
+  g.gain.setValueAtTime(v, now); g.gain.linearRampToValueAtTime(0.01, now + d);
+  o.start(now); o.stop(now + d);
+};
+const sounds = { 
+  laser: () => playSynth(800, 'square', 0.1, 0.1, 200), 
+  hit: () => playSynth(150, 'square', 0.1, 0.05, 40), 
+  gem: () => playSynth(600, 'square', 0.1, 0.05, 1200), 
+  slash: () => playSynth(300, 'square', 0.2, 0.1, 800), 
+  explosion: () => playSynth(100, 'square', 0.3, 0.2, 20),
+  powerup: () => playSynth(400, 'square', 0.4, 0.1, 800)
+};
+
+function toggleMute() { isMuted = !isMuted; DOM.btnMute.innerText = isMuted ? "SND: OFF" : "SND: ON"; initAudio(); }
+function togglePause() { 
+  if(isGameOver || isLevelingUp) return; 
+  isPaused = !isPaused; 
+  DOM.btnPause.innerText = isPaused ? "RESUME" : "PAUSE"; 
+  if(!isPaused) lastTime = performance.now(); // Prevent delta-time jump
+}
+
+let keys = {}, touchVector = { x: 0, y: 0 }, player, enemies, lasers, gems, slashes, texts, stars;
+let gameTime, lastSpawn, isLevelingUp, isGameOver, lastShotTime, lastSlashTime;
+
+const UPGRADES = [
+  { id: 'laserSize', name: 'EXTRA DAMAGE', desc: 'Stronger & Bigger Bullets' },
+  { id: 'speed', name: 'SPEED BOOST', desc: 'Move Ship Faster' },
+  { id: 'magnetRadius', name: 'LONGER RANGE', desc: 'Shoot Further & Item Magnet' },
+  { id: 'fireRate', name: 'FASTER SHOOTING', desc: 'Shoot Bullets Quicker' },
+  { id: 'maxHp', name: 'FULL HEALTH', desc: 'Max Health + Full Heal' },
+  { id: 'slashCd', name: 'FASTER WAVE', desc: 'Wave Attack Quicker' }
+];
+
+const ENEMY_TYPES = {
+  SWARMER: { speed: 180, radius: 10, hp: 1, maxHp: 1, color: '#f00', xp: 1, sides: 3 },
+  BASIC:   { speed: 100, radius: 16, hp: 4, maxHp: 4, color: '#0ff', xp: 2, sides: 4 },
+  TANK:    { speed: 50,  radius: 26, hp: 15, maxHp: 15, color: '#ff0', xp: 8, sides: 6 }
+};
+
+const initStars = () => stars = Array.from({ length: 150 }, () => ({ x: Math.floor(Math.random() * canvas.width), y: Math.floor(Math.random() * canvas.height) }));
+
+function init() {
+  player = { 
+    x: canvas.width / 2, y: canvas.height / 2, speed: 250, radius: 18, 
+    hp: 100, maxHp: 100, laserSize: 4, laserRange: 140, magnetRadius: 80, 
+    fireRate: 0.35, slashCooldown: 2.5, facingAngle: -Math.PI / 2, 
+    xp: 0, level: 1, nextXp: 10, score: 0, invulnTimer: 0 
+  };
+  enemies = []; lasers = []; gems = []; slashes = []; texts = [];
+  gameTime = lastSpawn = lastShotTime = lastSlashTime = 0;
+  isLevelingUp = isGameOver = isPaused = false;
+  DOM.btnPause.innerText = "PAUSE";
+  initStars(); updateHUD();
+  DOM.levelUp.classList.add('hidden'); DOM.gameOver.classList.add('hidden');
+  lastTime = performance.now();
+}
+
+// Global Keyboard Controls
+window.addEventListener('keydown', e => { 
+  initAudio(); 
+  const key = e.key.toLowerCase();
+  keys[key] = true; 
+  if (key === 'p' || key === 'escape') togglePause();
+  if (key === 'm') toggleMute();
+});
+window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+// Touch Controls
+if ('ontouchstart' in window || navigator.maxTouchPoints > 0) DOM.joyZone.style.display = 'block';
+let touchId = null, joystickCenter = { x: 0, y: 0 };
+DOM.joyZone.addEventListener('touchstart', e => {
+  initAudio(); touchId = e.changedTouches[0].identifier;
+  const rect = DOM.joyZone.getBoundingClientRect();
+  joystickCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  updateJoystick(e.changedTouches[0]);
+}, { passive: false });
+DOM.joyZone.addEventListener('touchmove', e => {
+  e.preventDefault();
+  for (let t of e.changedTouches) if (t.identifier === touchId) updateJoystick(t);
+}, { passive: false });
+const resetJoystick = () => { touchId = null; touchVector = { x: 0, y: 0 }; DOM.joyKnob.style.transform = 'translate(0px,0px)'; };
+DOM.joyZone.addEventListener('touchend', resetJoystick); DOM.joyZone.addEventListener('touchcancel', resetJoystick);
+
+function updateJoystick(touch) {
+  const dx = touch.clientX - joystickCenter.x, dy = touch.clientY - joystickCenter.y, dist = Math.min(Math.hypot(dx, dy), 40), angle = Math.atan2(dy, dx);
+  touchVector.x = (dist / 40) * Math.cos(angle); touchVector.y = (dist / 40) * Math.sin(angle);
+  DOM.joyKnob.style.transform = `translate(${Math.floor(dist * Math.cos(angle))}px,${Math.floor(dist * Math.sin(angle))}px)`;
+}
+
+const spawnDamageText = (x, y, amount, color) => texts.push({ x, y, text: amount, life: 0.8, color, vy: -50 });
+
+function updateHUD() {
+  const stats = loadStats();
+  DOM.hudHi.innerText = Math.max(stats.highScore, player.score);
+  DOM.hudBest.innerText = `${Math.max(stats.bestTime, Math.floor(gameTime))}s`;
+  DOM.level.innerText = player.level; 
+  DOM.score.innerText = player.score;
+  DOM.time.innerText = Math.floor(gameTime) + 's';
+  
+  const hpPercent = player.hp / player.maxHp;
+  DOM.hp.style.width = `${Math.max(0, hpPercent * 100)}%`;
+  DOM.xp.style.width = `${Math.min(100, (player.xp / player.nextXp) * 100)}%`;
+
+  if (hpPercent < 0.40) DOM.hpBg.classList.add('hp-low');
+  else DOM.hpBg.classList.remove('hp-low');
+}
+
+function updateInput(dt) {
+  let dx = (keys['d'] || keys['arrowright'] ? 1 : 0) - (keys['a'] || keys['arrowleft'] ? 1 : 0);
+  let dy = (keys['s'] || keys['arrowdown'] ? 1 : 0) - (keys['w'] || keys['arrowup'] ? 1 : 0);
+  if (touchVector.x || touchVector.y) { dx = touchVector.x; dy = touchVector.y; }
+  else if (dx && dy) { dx *= Math.SQRT1_2; dy *= Math.SQRT1_2; }
+
+  if (dx || dy) {
+    player.facingAngle = Math.atan2(dy, dx);
+    player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x + dx * player.speed * dt));
+    player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y + dy * player.speed * dt));
+  }
+}
+
+function triggerForwardAoE(now) {
+  if (now - lastSlashTime < player.slashCooldown) return;
+  lastSlashTime = now; sounds.slash();
+  const radius = player.laserRange, halfAngle = Math.PI / 3;
+  slashes.push({ x: player.x, y: player.y, angle: player.facingAngle, radius, timer: 0.2 });
+  for (let j = enemies.length - 1; j >= 0; j--) {
+    const e = enemies[j], dx = e.x - player.x, dy = e.y - player.y;
+    if (dx * dx + dy * dy <= radius * radius) {
+      let angleDiff = Math.atan2(dy, dx) - player.facingAngle;
+      if (Math.abs(Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff))) <= halfAngle) damageEnemy(j, 10 + player.level);
+    }
+  }
+}
+
+function shootLasers(now) {
+  if (now - lastShotTime < player.fireRate || !enemies.length) return;
+  let closest = null, minDistSq = Infinity;
+  for (const enemy of enemies) {
+    const dSq = (enemy.x - player.x) ** 2 + (enemy.y - player.y) ** 2;
+    if (dSq < minDistSq) { minDistSq = dSq; closest = enemy; }
+  }
+  if (closest) {
+    lastShotTime = now; sounds.laser();
+    const dx = closest.x - player.x, dy = closest.y - player.y, dist = Math.hypot(dx, dy);
+    const leadX = dx + Math.cos(Math.atan2(dy, dx)) * closest.speed * (dist / 800), leadY = dy + Math.sin(Math.atan2(dy, dx)) * closest.speed * (dist / 800), leadDist = Math.hypot(leadX, leadY);
+    lasers.push({ x: player.x, y: player.y, startX: player.x, startY: player.y, vx: (leadX / leadDist) * 800, vy: (leadY / leadDist) * 800, size: player.laserSize, color: '#ff0' });
+  }
+}
+
+function damageEnemy(index, dmg) {
+  const e = enemies[index]; e.hp -= dmg; sounds.hit();
+  spawnDamageText(e.x, e.y - e.radius, dmg, '#fff');
+  if (e.hp <= 0) {
+    sounds.explosion(); 
+    player.score += e.xp * 10; // Add to actual score
+    gems.push({ x: e.x, y: e.y, radius: 4, xp: e.xp, isMagnetized: false, color: '#0f0' });
+    enemies.splice(index, 1);
+  }
+}
+
+function triggerLevelUp() {
+  isLevelingUp = true; sounds.powerup(); 
+  DOM.levelUp.classList.remove('hidden');
+  DOM.upgradeOpts.innerHTML = '';
+  
+  const isHealthLow = (player.hp / player.maxHp) < 0.40;
+  
+  if (isHealthLow) {
+    DOM.lowHpBanner.classList.remove('hidden');
+    setTimeout(() => { DOM.lowHpBanner.classList.add('hidden'); }, 4000);
+  } else {
+    DOM.lowHpBanner.classList.add('hidden');
+  }
+
+  const availableUpgrades = UPGRADES.filter(up => up.id !== 'maxHp' || isHealthLow);
+  
+  [...availableUpgrades].sort(() => 0.5 - Math.random()).slice(0, 3).forEach(up => {
+    const btn = document.createElement('button');
+    btn.innerHTML = `<strong style="font-size:18px;">${up.name}</strong><br><small style="font-weight:normal;color:#999;">${up.desc}</small>`;
+    btn.onclick = () => {
+      if (up.id === 'laserSize') player.laserSize += 2;
+      else if (up.id === 'speed') player.speed += 25;
+      else if (up.id === 'magnetRadius') { player.magnetRadius += 60; player.laserRange += 90; } 
+      else if (up.id === 'fireRate') player.fireRate = Math.max(0.1, player.fireRate - 0.05);
+      else if (up.id === 'maxHp') { player.maxHp += 20; player.hp = player.maxHp; }
+      else if (up.id === 'slashCd') player.slashCooldown = Math.max(0.8, player.slashCooldown - 0.3);
+      updateHUD(); DOM.levelUp.classList.add('hidden'); isLevelingUp = false; lastTime = performance.now();
+    };
+    DOM.upgradeOpts.appendChild(btn);
+  });
+}
+
+let lastTime = performance.now();
+function gameLoop(timeMs) {
+  requestAnimationFrame(gameLoop);
+  
+  if (isPaused) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 32px Courier New'; ctx.textAlign = 'center';
+    ctx.fillText('- PAUSED -', canvas.width / 2, canvas.height / 2);
+    ctx.textAlign = 'left';
+    return;
+  }
+
+  const dt = Math.min((timeMs - lastTime) / 1000, 0.1); lastTime = timeMs; const now = timeMs / 1000;
+
+  if (!isLevelingUp && !isGameOver) {
+    gameTime += dt;
+    if (player.invulnTimer > 0) player.invulnTimer -= dt;
+
+    updateInput(dt);
+
+    if (now - lastSpawn > Math.max(0.3, 2.0 * Math.exp(-0.02 * gameTime))) {
+      lastSpawn = now;
+      const angle = Math.random() * TAU, R = Math.max(canvas.width, canvas.height) / 2 + 100, rand = Math.random();
+      let type = ENEMY_TYPES.BASIC;
+      if (gameTime > 15 && rand < 0.4) type = ENEMY_TYPES.SWARMER;
+      else if (gameTime > 30 && rand > 0.8) type = ENEMY_TYPES.TANK;
+      enemies.push({ x: player.x + R * Math.cos(angle), y: player.y + R * Math.sin(angle), ...type, hp: type.maxHp + Math.floor(gameTime / 60) });
+    }
+
+    shootLasers(now); triggerForwardAoE(now);
+
+    for (let i = slashes.length - 1; i >= 0; i--) if ((slashes[i].timer -= dt) <= 0) slashes.splice(i, 1);
+    for (let i = texts.length - 1; i >= 0; i--) { texts[i].y += texts[i].vy * dt; if ((texts[i].life -= dt) <= 0) texts.splice(i, 1); }
+
+    for (let i = lasers.length - 1; i >= 0; i--) {
+      const l = lasers[i]; l.x += l.vx * dt; l.y += l.vy * dt;
+      if (Math.hypot(l.x - l.startX, l.y - l.startY) > player.laserRange || l.x < 0 || l.x > canvas.width || l.y < 0 || l.y > canvas.height) { lasers.splice(i, 1); continue; }
+      for (let j = enemies.length - 1; j >= 0; j--) {
+        const e = enemies[j];
+        if (Math.hypot(e.x - l.x, e.y - l.y) <= (l.size + e.radius)) { damageEnemy(j, 2 + Math.floor(player.laserSize / 2)); lasers.splice(i, 1); break; }
+      }
+    }
+
+    for (let i = gems.length - 1; i >= 0; i--) {
+      const g = gems[i], dx = player.x - g.x, dy = player.y - g.y, dSq = dx * dx + dy * dy;
+      if (dSq <= player.magnetRadius ** 2) g.isMagnetized = true;
+      if (g.isMagnetized) { const dist = Math.sqrt(dSq); if (dist > 0) { g.x += (dx / dist) * 600 * dt; g.y += (dy / dist) * 600 * dt; } }
+      if (dSq <= (player.radius + g.radius) ** 2) {
+        player.xp += g.xp; sounds.gem();
+        spawnDamageText(player.x, player.y - 20, `+${g.xp} XP`, '#0f0'); gems.splice(i, 1); updateHUD();
+        if (player.xp >= player.nextXp) { player.level++; player.xp -= player.nextXp; player.nextXp = Math.floor(player.nextXp * 1.5); triggerLevelUp(); }
+      }
+    }
+
+    for (let i = enemies.length - 1; i >= 0; i--) {
+      const e = enemies[i], dx = player.x - e.x, dy = player.y - e.y, dist = Math.hypot(dx, dy);
+      if (dist > 0) { e.x += (dx / dist) * e.speed * dt; e.y += (dy / dist) * e.speed * dt; }
+
+      if (dist <= player.radius + e.radius && player.invulnTimer <= 0) {
+        player.hp -= 15; player.invulnTimer = 1.0; sounds.explosion(); updateHUD();
+        if (player.hp <= 0) {
+          player.hp = 0; isGameOver = true; updateHUD();
+          const finalTime = Math.floor(gameTime);
+          const stats = saveStats(player.score, finalTime);
+          DOM.runScore.innerText = player.score; DOM.runTime.innerText = `${finalTime}s`; DOM.runLevel.innerText = player.level;
+          DOM.bestTime.innerText = `${stats.bestTime}s`; DOM.highScore.innerText = stats.highScore;
+          DOM.gameOver.classList.remove('hidden');
+        }
+      }
+    }
+  }
+
+  // Draw Block (Strict Static 2D)
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Static Stars
+  ctx.fillStyle = '#fff';
+  stars.forEach(s => { ctx.fillRect(s.x, s.y, 1, 1); });
+
+  // Firing Range Visualizer (Dotted)
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.laserRange, 0, TAU);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Draw Gems
+  gems.forEach(g => {
+    ctx.fillStyle = g.color;
+    ctx.fillRect(g.x - g.radius, g.y - g.radius, g.radius * 2, g.radius * 2);
+  });
+
+  // Draw Lasers
+  lasers.forEach(l => { 
+    ctx.fillStyle = l.color; 
+    ctx.fillRect(l.x - l.size/2, l.y - l.size/2, l.size, l.size); 
+  });
+
+  // Draw Wave Slashes
+  slashes.forEach(s => {
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, s.angle - Math.PI / 3, s.angle + Math.PI / 3); ctx.stroke();
+  });
+
+  // Draw Enemies
+  enemies.forEach(e => {
+    ctx.save(); ctx.translate(e.x, e.y);
+    ctx.fillStyle = '#000'; ctx.strokeStyle = e.color; ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < e.sides; i++) {
+      const a = (i * TAU) / e.sides, vx = Math.cos(a) * e.radius, vy = Math.sin(a) * e.radius;
+      if (i === 0) ctx.moveTo(vx, vy); else ctx.lineTo(vx, vy);
+    }
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    
+    if (e.hp < e.maxHp) {
+      ctx.fillStyle = '#f00'; ctx.fillRect(-10, e.radius + 5, 20 * (e.hp / e.maxHp), 4);
+    }
+    ctx.restore();
+  });
+
+  // Draw Player
+  ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.facingAngle);
+  if (player.invulnTimer <= 0 || Math.floor(gameTime * 10) % 2 === 0) {
+    ctx.fillStyle = '#000'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+    ctx.beginPath(); 
+    ctx.moveTo(player.radius, 0); 
+    ctx.lineTo(-player.radius, player.radius * 0.8); 
+    ctx.lineTo(-player.radius * 0.4, 0); 
+    ctx.lineTo(-player.radius, -player.radius * 0.8); 
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+  }
+  ctx.restore();
+
+  // Draw Floating Text
+  texts.forEach(t => { 
+    ctx.fillStyle = t.color; ctx.font = 'bold 16px Courier New'; 
+    ctx.fillText(t.text, t.x - 10, t.y); 
+  });
+
+  if (Math.floor(gameTime) % 1 === 0) updateHUD();
+}
+
+const restartGame = () => init();
+init(); requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
