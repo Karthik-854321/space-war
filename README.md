@@ -3,9 +3,9 @@ Space War
 It is a browser-based space shooter, which I developed as a personal project without using any game engines.
 
 Preview
-![alt text](image.png)
-![alt text](image-1.png)
-![alt text](image-2.png)
+![selection panel](image.png)
+![game-1](image-1.png)
+![game-2](image-2.png)
 
 The game has two modes:
 
