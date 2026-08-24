@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Space War - 90s Edition</title>
+<title>Space War 360°</title>
 <style>
 *{box-sizing:border-box;user-select:none}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font-family:"Courier New",monospace}
@@ -95,7 +95,7 @@ button:hover{background:#fff;color:#000}
 <div id="joy"><div id="knob"></div></div>
 
 <div id="start" class="overlay">
-    <h1 style="font-size: min(8vw, 64px); margin-bottom: 20px;">SPACE WAR</h1>
+    <h1 style="font-size: min(8vw, 64px); margin-bottom: 20px;">SPACE WAR 360°</h1>
     <p style="font-size: 18px; margin: 8px 0;">W,A,S,D / ARROW KEYS TO MOVE</p>
     <p style="font-size: 22px; margin: 8px 0; color:#f2fa0f;"><u>AUTO FIRE ENABLED</u></p>
     <p style="font-size: 18px; margin: 8px 0;">ENEMIES ATTACK FROM ALL SIDES</p>
@@ -137,7 +137,6 @@ button:hover{background:#fff;color:#000}
 <script>
 const $=id=>document.getElementById(id);
 const c=$("canvas"),x=c.getContext("2d"),TAU=Math.PI*2;
-const STORE="space_war_records";
 
 let p,E,B,G,P,T,S,EB;
 let play=0,pause=0,leveling=0,dead=0,mute=0;
@@ -185,23 +184,32 @@ function warWidth(){return desktop()?c.width*.8:c.width}
 addEventListener("resize",resize);
 
 function record(){
-try{return JSON.parse(localStorage.getItem(STORE))||{score:0,time:0}}
-catch(e){return{score:0,time:0}}
+    return {
+        score: +(localStorage.getItem("score360") || 0),
+        time: +(localStorage.getItem("time360") || 0)
+    };
 }
 
-function save(){
-let r=record();
-r.score=Math.max(r.score,p?p.score:0);
-r.time=Math.max(r.time,time|0);
-localStorage.setItem(STORE,JSON.stringify(r));
-updateMenuStats();
-return r;
+function save(isDead){
+    let r=record();
+    r.score=Math.max(r.score,p?p.score:0);
+    r.time=Math.max(r.time,time|0);
+    localStorage.setItem("score360", r.score);
+    localStorage.setItem("time360", r.time);
+    
+    if (isDead) {
+        let runs = +(localStorage.getItem("runs360") || 0);
+        localStorage.setItem("runs360", runs + 1);
+    }
+    
+    updateMenuStats();
+    return r;
 }
 
 function updateMenuStats(){
-let r=record();
-$("menuScore").textContent=r.score;
-$("menuTime").textContent=r.time+"s";
+    let r=record();
+    $("menuScore").textContent=r.score;
+    $("menuTime").textContent=r.time+"s";
 }
 
 function sound(f,d=.08,type="square",v=.04,end){
@@ -748,7 +756,7 @@ x.fillRect(warWidth(),0,c.width-warWidth(),c.height);
 
 function end(){
 dead=1;
-let r=save();
+let r=save(true);
 $("finalScore").textContent=p.score;
 $("finalTime").textContent=(time|0)+"s";
 $("finalLevel").textContent=p.level;
@@ -784,19 +792,8 @@ $("mute").textContent=mute?"SND: OFF":"SND: ON";
 }
 
 function goToMainMenu(){
-save();
-play=0;
-pause=0;
-dead=0;
-leveling=0;
-$("pauseMenu").classList.add("hidden");
-$("over").classList.add("hidden");
-$("levelUp").classList.add("hidden");
-$("start").classList.remove("hidden");
-$("warning").classList.add("hidden");
-$("bossWarning").classList.add("hidden");
-$("pause").textContent="PAUSE";
-updateMenuStats();
+save(false);
+window.location.href = "menu.html";
 }
 
 addEventListener("keydown",e=>{

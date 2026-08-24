@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Space War</title>
   <style>
     :root { --bg: #02040a; --b: #1687ff; }
@@ -86,13 +87,14 @@
   <script>
     let mode = "180";
 
-    // Load saved records from localStorage
+    // Load saved records from localStorage upon page load
     ['180', '360'].forEach(m => {
       document.getElementById(`score${m}`).textContent = localStorage.getItem(`score${m}`) || 0;
       document.getElementById(`time${m}`).textContent = (localStorage.getItem(`time${m}`) || 0) + 's';
       document.getElementById(`runs${m}`).textContent = localStorage.getItem(`runs${m}`) || 0;
     });
 
+    // Handle clicks for layout activation & playing the selected mode
     document.onclick = e => {
       let z = e.target.closest(".zone");
       if (z) {

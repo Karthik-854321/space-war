@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Hyperion Zero</title>
+<title>Hyperion Zero - 180 Mode</title>
 
 <style>
 *{box-sizing:border-box;user-select:none}
@@ -113,7 +113,7 @@ button:hover{background:#ddd;color:#111}
 <div id="bossAlert" class="hidden">⚠ BOSS INCOMING ⚠</div>
 
 <div id="start" class="overlay" style="font-size: 24px;">
-    <h1 style="font-size: 64px; margin-bottom: 20px;">SPACE WAR</h1>
+    <h1 style="font-size: 64px; margin-bottom: 20px;">SPACE WAR 180°</h1>
     <p style="font-size: 20px; margin: 10px 0;">WASD / ARROW KEYS TO MOVE</p>
     <p style="font-size: 20px; margin: 10px 0;">AUTO FIRE ENABLED</p>
     <p style="font-size: 20px; margin: 10px 0;">ENEMIES ATTACK FROM ONE SIDE</p>
@@ -199,7 +199,7 @@ let player,enemies,lasers,enemyLasers,drops,particles,stars,boss;
 let time=0,lastShot=0,lastSpawn=0,bossLevelTracker=0;
 let playing=false,paused=false,over=false,muted=false;
 let multiBeamFirstUnlocked=false;
-let high=+localStorage.getItem("hyperion_highscore")||0;
+let high=+localStorage.getItem("score180")||0;
 let last=performance.now();
 
 $("menuScore").textContent=high;
@@ -266,18 +266,8 @@ function togglePause(){
 }
 
 function returnToMenu(){
-    playing=false;
-    paused=false;
-    over=false;
-    
-    $("healthAlert").classList.add("hidden");
-    $("bossAlert").classList.add("hidden");
-    $("pauseMenu").classList.add("hidden");
-    $("levelUp").classList.add("hidden");
-    $("gameOver").classList.add("hidden");
-    $("start").classList.remove("hidden");
-    
-    $("menuScore").textContent=high;
+    // Save any progress and redirect to menu.html
+    window.location.href = "menu.html";
 }
 
 /* ---------- INPUT HANDLING ---------- */
@@ -986,8 +976,16 @@ function endGame(){
 
     if(player.score>high){
         high=player.score;
-        localStorage.setItem("hyperion_highscore",high);
+        localStorage.setItem("score180",high);
     }
+    
+    let bestTime = +(localStorage.getItem("time180") || 0);
+    if (Math.floor(time) > bestTime) {
+        localStorage.setItem("time180", Math.floor(time));
+    }
+    
+    let runs = +(localStorage.getItem("runs180") || 0);
+    localStorage.setItem("runs180", runs + 1);
 
     $("finalScore").textContent=player.score;
     $("finalTime").textContent=Math.floor(time)+"s";
